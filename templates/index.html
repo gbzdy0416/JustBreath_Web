@@ -63,7 +63,47 @@
   <button onclick="startBreathing()">Start!</button>
 </div>
 <script>
+  function startBreathing(){
+    const goal = document.getElementById("goal").value;
+    const intensity_function = document.getElementById("intensity_function").value;
+    const intensity_time = document.getElementById("intensity_time").value;
+    var inhale, exhale, repetition;
+    fetch("/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goal, intensity_function, intensity_time })
+    })
+    .then(res => res.json())
+    .then(data => {
+      inhale = data.inhale;
+      exhale = data.exhale;
+      repetition = data.repetition;
+      const circle = document.getElementById("circle");
+      const status = document.getElementById("status");
+      let current = 0;
+      function animation() {
+        if (current >= repetition) {
+          status.textContent = "Finish!";
+          return;
+        }
+        status.textContent = "Inhale...";
+        circle.style.transition = `transform ${inhale}ms ease-in-out`;
+        circle.style.transform = "scale(2)";
+        setTimeout(() => {
+          status.textContent = "Exhale...";
+          circle.style.transition = `transform ${exhale}ms ease-in-out`;
+          circle.style.transform = "scale(1)";
+          setTimeout(() => {
+            current++;
+            animation();
+          }, exhale);
+        }, inhale);
+      }
+    animation();
+   });
+  }
 
+  
 </script>
 </body>
 </html>

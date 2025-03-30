@@ -6,9 +6,9 @@ app = Flask(__name__)
 model = tf.keras.models.load_model("BreathingModel.h5")
 
 def preprocess_input(raw_data):
-    goal = raw_data['goal']
-    intensity_function = raw_data['intensity_function'] / 100.0
-    intensity_time = raw_data['intensity_time'] / 100.0
+    goal = int(raw_data['goal'])
+    intensity_function = int(raw_data['intensity_function']) / 100.0
+    intensity_time = int(raw_data['intensity_time']) / 100.0
     return np.array([goal, intensity_function, intensity_time])
 
 
@@ -21,8 +21,8 @@ def recommend():
     output_max = np.array([1250, 9, 10, 9])
     tick_length, inhale,  exhale, repetition = prediction * (output_max - output_min) + output_min
     return jsonify({
-        "inhale_ms": int(inhale * tick_length),
-        "exhale_ms": int(exhale * tick_length),
+        "inhale": int(inhale * tick_length),
+        "exhale": int(exhale * tick_length),
         "repetition": int(repetition)
     })
 
