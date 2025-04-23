@@ -48,59 +48,56 @@
 <div id="circle"></div>
 <p id="status">Set the arguments and press start!</p>
 <div class="Settings">
-  <label>Your goal:</label>
-  <select id="goal">
-    <option value="0">Decrease Anxiety</option>
-    <option value="1">Concentrate</option>
-  </select>
-
-  <label>How strong?: </label>
-  <input type="range" id="intensity_function" min="0" max="100" value="50">
-  
-  <label>How long?: </label>
-  <input type="range" id="intensity_time" min="0" max="100" value="50">
+  <label>We recommend you not to set the exhale time shorter than inhale time.</label>
+  <label>Inhale (in seconds): </label>
+  <input type="range" id="inhale" min="3" max="8" value="5" oninput="iValue.innerText = this.value">
+  <span id="iValue">5</span>
+  <label>Exhale (in seconds): </label>
+  <input type="range" id="exhale" min="3" max="8" value="5" oninput="eValue.innerText = this.value">
+  <span id="eValue">5</span>
+  <label>Repetition (times): </label>
+  <input type="range" id="repetition" min="3" max="15" value="6" oninput="rValue.innerText = this.value">
+  <span id="rValue">5</span>
   
   <button onclick="startBreathing()">Start!</button>
 </div>
 <script>
+  let isRunning = false;
+  let current = 0;
   function startBreathing(){
-    const goal = document.getElementById("goal").value;
-    const intensity_function = document.getElementById("intensity_function").value;
-    const intensity_time = document.getElementById("intensity_time").value;
+    if (isRunning) return;
+    isRunning = true;
     var inhale, exhale, repetition;
-    fetch("/recommend", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ goal, intensity_function, intensity_time })
-    })
-    .then(res => res.json())
-    .then(data => {
-      inhale = data.inhale;
-      exhale = data.exhale;
-      repetition = data.repetition;
-      const circle = document.getElementById("circle");
-      const status = document.getElementById("status");
-      let current = 0;
-      function animation() {
-        if (current >= repetition) {
-          status.textContent = "Finish!";
-          return;
-        }
-        status.textContent = "Inhale...";
-        circle.style.transition = `transform ${inhale}ms ease-in-out`;
-        circle.style.transform = "scale(2)";
-        setTimeout(() => {
-          status.textContent = "Exhale...";
-          circle.style.transition = `transform ${exhale}ms ease-in-out`;
-          circle.style.transform = "scale(1)";
-          setTimeout(() => {
-            current++;
-            animation();
-          }, exhale);
-        }, inhale);
+    inhale = document.getElementById("inhale").value * 1000;
+    exhale = document.getElementById("exhale").value * 1000;
+    repetition = document.getElementById("repetition").value;
+    const status = document.getElementById("status");
+    const circle = document.getElementById("circle");
+    function animation() {
+      if (current >= repetition) {
+      status.textContent = "Finish!";
+      isRunning = false;
+      return;
       }
+      status.textContent = "Inhale...";
+    circle.style.transition = "none";
+    circle.style.transform = "scale(1)";
+    requestAnimationFrame(() => {
+      circle.style.transition = `transform ${inhale}ms ease-in-out`;
+      circle.style.transform = "scale(2)";
+
+      setTimeout(() => {
+        status.textContent = "Exhale...";
+        circle.style.transition = `transform ${exhale}ms ease-in-out`;
+        circle.style.transform = "scale(1)";
+        setTimeout(() => {
+          current++;
+          animation();
+        }, exhale);
+      }, inhale);
+    });
+  }
     animation();
-   });
   }
 
   

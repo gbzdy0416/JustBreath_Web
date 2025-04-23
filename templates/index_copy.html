@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JustBreath</title>
+<style>
+  body {
+    background-color: #eeeeee;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  .Settings {
+    display: flex;
+    flex-direction: column;
+    margin: 16px;
+    gap: 16px;
+  }
+  #circle {
+    width: 120px;
+    height: 120px;
+    background-color: #66ccff;
+    border-radius: 50%;
+    transition: transform 1s ease-in-out;
+    margin-bottom: 80px;
+  }
+  #status {
+    margin: 10px;
+    font-size: 1.3rem;
+
+  }
+  button {
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 200px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="circle"></div>
+<p id="status">Set the arguments and press start!</p>
+<div class="Settings">
+
+  <label>How Strong?: </label>
+  <input type="range" id="intensity_function" min="0" max="100" value="50">
+  
+  <label>How Long?: </label>
+  <input type="range" id="intensity_time" min="1" max="5" value="3">
+  
+  <label for="age-group">Your age group: </label>
+  <select id="age-group" name="age-group" required>
+  <option value="">Please choose: </option>
+  <option value="1">18-24</option>
+  <option value="2">25-30</option>
+  <option value="3">31-40</option>
+  <option value="4">41-50</option>
+  <option value="5">51-60</option>
+  <option value="6">60+</option>
+  <option value="7">prefer not to say</option>
+  </select>
+  <label for="gender">Your gender: </label>
+  <select id="gender" name="gender" required>
+  <option value="">Please choose: </option>
+  <option value="1">male</option>
+  <option value="2">female</option>
+  <option value="3">divers</option>
+  <option value="4">other</option>
+  <option value="5">prefer not to say</option>
+  </select>
+  <button onclick="startBreathing()">Start!</button>
+</div>
+<script>
+  let isRunning = false;
+  function startBreathing(){
+    if (isRunning) return;
+    isRunning = true;
+    const intensity_function = document.getElementById("intensity_function").value;
+    const intensity_time = document.getElementById("intensity_time").value;
+    const age_group = document.getElementById("age-group").value;
+    const gender = document.getElementById("gender").value;
+    var inhale, exhale, repetition;
+    if (!age_group || !gender) {
+      alert("Please select your age group and gender.");
+      isRunning = false;
+      return;
+    }
+    fetch("/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({intensity_function, intensity_time, age_group, gender})
+    })
+    .then(res => res.json())
+    .then(data => {
+      inhale = data.inhale;
+      exhale = data.exhale;
+      repetition = data.repetition;
+      mode = data.mode;
+      let md = mode == 1 ? "Spade" : "Club";
+      const circle = document.getElementById("circle");
+      const status = document.getElementById("status");
+      let current = 0;
+      function animation() {
+        if (current >= repetition) {
+          status.textContent = `Finish! You've tested mode ${md}`;
+          isRunning = false;
+          return;
+        }
+        status.textContent = "Inhale...";
+        circle.style.transition = `transform ${inhale}ms ease-in-out`;
+        circle.style.transform = "scale(2)";
+        setTimeout(() => {
+          status.textContent = "Exhale...";
+          circle.style.transition = `transform ${exhale}ms ease-in-out`;
+          circle.style.transform = "scale(1)";
+          setTimeout(() => {
+            current++;
+            animation();
+          }, exhale);
+        }, inhale);
+      }
+    animation();
+   });
+  }
+
+  
+</script>
+</body>
+</html>
