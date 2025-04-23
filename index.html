@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JustBreath</title>
+<style>
+  body {
+    background-color: #eeeeee;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  .Settings {
+    display: flex;
+    flex-direction: column;
+    margin: 16px;
+    gap: 16px;
+  }
+  #circle {
+    width: 120px;
+    height: 120px;
+    background-color: #66ccff;
+    border-radius: 50%;
+    transition: transform 1s ease-in-out;
+    margin-bottom: 80px;
+  }
+  #status {
+    margin: 10px;
+    font-size: 1.3rem;
+
+  }
+  button {
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 200px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="circle"></div>
+<p id="status">Set the arguments and press start!</p>
+<div class="Settings">
+  <label>We recommend you not to set the exhale time shorter than inhale time.</label>
+  <label>Inhale (in seconds): </label>
+  <input type="range" id="inhale" min="3" max="8" value="5" oninput="iValue.innerText = this.value">
+  <span id="iValue">5</span>
+  <label>Exhale (in seconds): </label>
+  <input type="range" id="exhale" min="3" max="8" value="5" oninput="eValue.innerText = this.value">
+  <span id="eValue">5</span>
+  <label>Repetition (times): </label>
+  <input type="range" id="repetition" min="3" max="15" value="6" oninput="rValue.innerText = this.value">
+  <span id="rValue">5</span>
+  
+  <button onclick="startBreathing()">Start!</button>
+</div>
+<script>
+  let isRunning = false;
+  let current = 0;
+  function startBreathing(){
+    if (isRunning) return;
+    isRunning = true;
+    var inhale, exhale, repetition;
+    inhale = document.getElementById("inhale").value * 1000;
+    exhale = document.getElementById("exhale").value * 1000;
+    repetition = document.getElementById("repetition").value;
+    const status = document.getElementById("status");
+    const circle = document.getElementById("circle");
+    function animation() {
+      if (current >= repetition) {
+      status.textContent = "Finish!";
+      isRunning = false;
+      return;
+      }
+      status.textContent = "Inhale...";
+    circle.style.transition = "none";
+    circle.style.transform = "scale(1)";
+    requestAnimationFrame(() => {
+      circle.style.transition = `transform ${inhale}ms ease-in-out`;
+      circle.style.transform = "scale(2)";
+
+      setTimeout(() => {
+        status.textContent = "Exhale...";
+        circle.style.transition = `transform ${exhale}ms ease-in-out`;
+        circle.style.transform = "scale(1)";
+        setTimeout(() => {
+          current++;
+          animation();
+        }, exhale);
+      }, inhale);
+    });
+  }
+    animation();
+  }
+
+  
+</script>
+</body>
+</html>
